@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import uuid
+from html import escape
 from pathlib import Path
 from typing import Any
 
@@ -143,3 +144,31 @@ def runtime_ablation(contracts: list[dict[str, Any]], split: str = "test") -> di
         result = evaluate_benchmark(contracts, mode=mode, split=split)
         series.append({"name": name, "mode": mode, **result["metrics"]})
     return {"split": split, "series": series, "manifest": benchmark_manifest()}
+
+
+def render_comparison_svg(result: dict[str, Any]) -> tuple[str, str]:
+    runtime = result.get("runtime")
+    if runtime:
+        title, key = "Attack Success Rate", "attack_success_rate"
+        series = runtime["series"]
+    elif result.get("compiler"):
+        title, key = "Semantic Accuracy", "semantic_accuracy"
+        series = result["compiler"]["series"]
+    else:
+        raise ValueError("Run has no comparison series")
+    width, row_height = 640, 48
+    height = 70 + len(series) * row_height
+    bars = []
+    for index, item in enumerate(series):
+        value = max(0.0, min(1.0, float(item[key])))
+        y = 52 + index * row_height
+        label = escape(str(item["name"]), quote=True)
+        bars.append(f'<text x="12" y="{y+16}" font-size="14">{label}</text>')
+        bars.append(f'<rect x="205" y="{y}" width="{int(value*330)}" height="22" fill="#228f84"/>')
+        bars.append(f'<text x="550" y="{y+16}" font-size="14">{value:.1%}</text>')
+    svg=(f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
+         f'viewBox="0 0 {width} {height}" role="img" aria-label="{escape(title,quote=True)}">'
+         f'<rect width="100%" height="100%" fill="#ffffff"/>'
+         f'<text x="12" y="29" font-size="18" font-weight="bold">{escape(title)}</text>'
+         f'{"".join(bars)}</svg>')
+    return title, svg

@@ -11,7 +11,7 @@ from sqlalchemy import func, update
 from sqlalchemy.exc import IntegrityError, OperationalError
 
 from .database import Base, engine, get_db, SessionLocal
-from .models import Agent, Policy, Contract, Trajectory, ActionEvent, Decision, Risk, Approval, Recovery, AuditEvent, AuditHead, McpServer, Tool, TrustedMcpTool, AttackRun, Benchmark, BenchmarkScenario, Experiment, EvaluationRun, PolicyReview, LineageEvent, WebhookRequest, DecisionContextSnapshot
+from .models import Agent, Policy, Contract, Trajectory, ActionEvent, Decision, Risk, Approval, Recovery, AuditEvent, AuditHead, McpServer, Tool, TrustedMcpTool, AttackRun, Benchmark, BenchmarkScenario, Experiment, ExperimentConfig, EvaluationRun, PolicyReview, LineageEvent, WebhookRequest, DecisionContextSnapshot
 from .security_engine import compile_policy, parse_policy, build_graph, generate_dsl, evaluate_action, safe_recovery, semantic_repair, generate_counterexamples, semantic_verify
 from .services.mcp_runtime import execute_tool
 from .services.provenance import build_provenance
@@ -19,7 +19,7 @@ from .services.benchmark_engine import SCENARIOS as BENCH_SCENARIOS, evaluate_be
 from .services.llm_extractor import extract_policy, provider_status
 from .services.formal_verifier import verify_formal, build_formal_ir, formal_ir_to_smt2
 from .services.p2cv_v3 import compile_policy_v3, graph_ir_v3
-from .services.research_experiments import compiler_benchmark, run_compiler_ablation, runtime_ablation, persist_run
+from .services.research_experiments import compiler_benchmark, run_compiler_ablation, runtime_ablation, persist_run, render_comparison_svg
 from benchmark.runner.validate import validate_curated
 
 def _strict() -> bool:
@@ -1068,11 +1068,24 @@ def _execute_experiment(db:Session,body:dict,target_id:str="")->tuple[Evaluation
     if kind in {"full-suite","compiler-ablation"}: result["compiler"]=run_compiler_ablation(split=split)
     result["manifest"]=benchmark_manifest()
     config={"kind":kind,"split":split,"manifest":result["manifest"]}
+    if body.get("config_id"): config["config_id"]=body["config_id"]
     return _save_evaluation(db,"experiment",target_id,config,result),result
 
+_EXPERIMENT_PRESETS={
+    "cfg_runtime_full":{"id":"cfg_runtime_full","kind":"runtime-ablation","split":"test","frozen":True},
+    "cfg_ablation_graph":{"id":"cfg_ablation_graph","kind":"compiler-ablation","split":"test","frozen":True},
+}
+
+def _experiment_config(db:Session,config_id:str)->dict:
+    if config_id in _EXPERIMENT_PRESETS: return _EXPERIMENT_PRESETS[config_id]
+    saved=db.get(ExperimentConfig,config_id)
+    if not saved: raise HTTPException(404,"Experiment config not found")
+    return jload(saved.config_json)
+
 @app.get("/api/v1/experiments/configs")
-def experiment_configs():
-    return wrap([{"id":"cfg_runtime_full","kind":"runtime-ablation","split":"test","frozen":True},{"id":"cfg_ablation_graph","kind":"compiler-ablation","split":"test","frozen":True}])
+def experiment_configs(db:Session=Depends(get_db)):
+    saved=[jload(row.config_json) for row in db.query(ExperimentConfig).order_by(ExperimentConfig.created_at).all()]
+    return wrap([*_EXPERIMENT_PRESETS.values(),*saved])
 
 @app.get("/api/v1/experiments/compare")
 def experiment_compare(db:Session=Depends(get_db)):
@@ -1145,9 +1158,20 @@ def benchmark_run_failures(run_id:str,db:Session=Depends(get_db)):
     result=jload(_evaluation(db,run_id,"benchmark").result_json)
     return wrap({"run_id":run_id,"failures":[{"scenario_id":r["id"],"type":r["category"],"expected":r["expected_decision"],"actual":r["actual"],"note":r["reason"]} for r in result["rows"] if not r["passed"]]})
 @app.post("/api/v1/experiments/configs")
-def experiment_config_create(body:dict=Body(default={})): return wrap({"id":uid("cfg"),**body,"frozen":False})
+def experiment_config_create(body:dict=Body(default={}),db:Session=Depends(get_db)):
+    kind=body.get("kind","full-suite");split=body.get("split","test")
+    if kind not in {"full-suite","runtime-ablation","compiler-ablation"}: raise HTTPException(422,"Unknown experiment kind")
+    if split not in {"all","train","dev","test"}: raise HTTPException(422,"Unknown experiment split")
+    config={"id":uid("cfg"),"name":body.get("name","Experiment config"),"kind":kind,"split":split,"frozen":True}
+    db.add(ExperimentConfig(id=config["id"],config_json=json.dumps(config)));db.commit()
+    return wrap(config)
 @app.post("/api/v1/experiments/runs")
 def experiment_run_create(body:dict=Body(default={}),db:Session=Depends(get_db)):
+    if body.get("config_id"):
+        saved=_experiment_config(db,body["config_id"])
+        if any(key in body and body[key]!=saved[key] for key in ("kind","split")):
+            raise HTTPException(409,"Run options differ from frozen config")
+        body={"config_id":saved["id"],"kind":saved["kind"],"split":saved["split"]}
     run,_=_execute_experiment(db,body)
     return wrap({"run_id":run.id,"status":"completed","config":jload(run.config_json),"artifact_path":run.artifact_path})
 @app.get("/api/v1/experiments/runs/{run_id}")
@@ -1158,7 +1182,11 @@ def experiment_run_status(run_id:str,db:Session=Depends(get_db)):
 def experiment_run_results(run_id:str,db:Session=Depends(get_db)):
     return wrap({"run_id":run_id,**jload(_evaluation(db,run_id,"experiment").result_json)})
 @app.post("/api/v1/experiments/{run_id}/figures")
-def experiment_figures(run_id:str): return wrap({"run_id":run_id,"figures":[{"id":"fig_asr","title":"Attack Success Rate Comparison","format":"svg"}]})
+def experiment_figures(run_id:str,db:Session=Depends(get_db)):
+    result=jload(_evaluation(db,run_id,"experiment").result_json)
+    try: title,svg=render_comparison_svg(result)
+    except (KeyError,ValueError,TypeError) as exc: raise HTTPException(409,"Run has no comparison data") from exc
+    return wrap({"run_id":run_id,"figures":[{"id":"fig_comparison","title":title,"format":"svg","svg":svg}]})
 
 
 # ---- V3 Research / Reproducibility ----

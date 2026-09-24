@@ -181,6 +181,12 @@ class Experiment(Base):
     metrics_json: Mapped[str] = mapped_column(Text, default="{}")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=now)
 
+class ExperimentConfig(Base):
+    __tablename__ = "experiment_configs"
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    config_json: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=now)
+
 class EvaluationRun(Base):
     __tablename__ = "evaluation_runs"
     id: Mapped[str] = mapped_column(String(64), primary_key=True)

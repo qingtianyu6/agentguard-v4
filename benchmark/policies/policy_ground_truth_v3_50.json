@@ -1,0 +1,742 @@
+[
+  {
+    "id": "PGT3-001",
+    "text": "未经主管授权，任何 Agent 不得向外部服务发送客户联系方式。",
+    "category": "Sensitive outbound approval",
+    "expected": {
+      "action": "send",
+      "resource": "SensitiveData",
+      "destination": "ExternalService",
+      "effect": "DENY_UNLESS",
+      "approval": true,
+      "temporal": []
+    },
+    "split": "dev"
+  },
+  {
+    "id": "PGT3-002",
+    "text": "没有主管审批时，禁止向第三方发送敏感数据。",
+    "category": "Sensitive outbound approval",
+    "expected": {
+      "action": "send",
+      "resource": "SensitiveData",
+      "destination": "ExternalService",
+      "effect": "DENY_UNLESS",
+      "approval": true,
+      "temporal": []
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-003",
+    "text": "未经主管授权，任何 Agent 不得向外部服务发送客户联系方式。",
+    "category": "Sensitive outbound approval",
+    "expected": {
+      "action": "send",
+      "resource": "SensitiveData",
+      "destination": "ExternalService",
+      "effect": "DENY_UNLESS",
+      "approval": true,
+      "temporal": []
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-004",
+    "text": "没有主管审批时，禁止向第三方发送敏感数据。",
+    "category": "Sensitive outbound approval",
+    "expected": {
+      "action": "send",
+      "resource": "SensitiveData",
+      "destination": "ExternalService",
+      "effect": "DENY_UNLESS",
+      "approval": true,
+      "temporal": []
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-005",
+    "text": "未经主管授权，任何 Agent 不得向外部服务发送客户联系方式。",
+    "category": "Sensitive outbound approval",
+    "expected": {
+      "action": "send",
+      "resource": "SensitiveData",
+      "destination": "ExternalService",
+      "effect": "DENY_UNLESS",
+      "approval": true,
+      "temporal": []
+    },
+    "split": "test"
+  },
+  {
+    "id": "PGT3-006",
+    "text": "没有主管审批时，禁止向第三方发送敏感数据。",
+    "category": "Sensitive outbound approval",
+    "expected": {
+      "action": "send",
+      "resource": "SensitiveData",
+      "destination": "ExternalService",
+      "effect": "DENY_UNLESS",
+      "approval": true,
+      "temporal": []
+    },
+    "split": "dev"
+  },
+  {
+    "id": "PGT3-007",
+    "text": "未经主管授权，任何 Agent 不得向外部服务发送客户联系方式。",
+    "category": "Sensitive outbound approval",
+    "expected": {
+      "action": "send",
+      "resource": "SensitiveData",
+      "destination": "ExternalService",
+      "effect": "DENY_UNLESS",
+      "approval": true,
+      "temporal": []
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-008",
+    "text": "没有主管审批时，禁止向第三方发送敏感数据。",
+    "category": "Sensitive outbound approval",
+    "expected": {
+      "action": "send",
+      "resource": "SensitiveData",
+      "destination": "ExternalService",
+      "effect": "DENY_UNLESS",
+      "approval": true,
+      "temporal": []
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-009",
+    "text": "未经主管授权，任何 Agent 不得向外部服务发送客户联系方式。",
+    "category": "Sensitive outbound approval",
+    "expected": {
+      "action": "send",
+      "resource": "SensitiveData",
+      "destination": "ExternalService",
+      "effect": "DENY_UNLESS",
+      "approval": true,
+      "temporal": []
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-010",
+    "text": "没有主管审批时，禁止向第三方发送敏感数据。",
+    "category": "Sensitive outbound approval",
+    "expected": {
+      "action": "send",
+      "resource": "SensitiveData",
+      "destination": "ExternalService",
+      "effect": "DENY_UNLESS",
+      "approval": true,
+      "temporal": []
+    },
+    "split": "test"
+  },
+  {
+    "id": "PGT3-011",
+    "text": "退款前必须先完成身份认证和订单确认。",
+    "category": "Temporal refund",
+    "expected": {
+      "action": "refund",
+      "resource": "Order",
+      "destination": "AnyDestination",
+      "effect": "REQUIRE",
+      "approval": false,
+      "temporal": [
+        "identity_verified",
+        "order_confirmed"
+      ]
+    },
+    "split": "dev"
+  },
+  {
+    "id": "PGT3-012",
+    "text": "执行退款之前，需要先身份验证，再确认订单。",
+    "category": "Temporal refund",
+    "expected": {
+      "action": "refund",
+      "resource": "Order",
+      "destination": "AnyDestination",
+      "effect": "REQUIRE",
+      "approval": false,
+      "temporal": [
+        "identity_verified",
+        "order_confirmed"
+      ]
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-013",
+    "text": "退款前必须先完成身份认证和订单确认。",
+    "category": "Temporal refund",
+    "expected": {
+      "action": "refund",
+      "resource": "Order",
+      "destination": "AnyDestination",
+      "effect": "REQUIRE",
+      "approval": false,
+      "temporal": [
+        "identity_verified",
+        "order_confirmed"
+      ]
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-014",
+    "text": "执行退款之前，需要先身份验证，再确认订单。",
+    "category": "Temporal refund",
+    "expected": {
+      "action": "refund",
+      "resource": "Order",
+      "destination": "AnyDestination",
+      "effect": "REQUIRE",
+      "approval": false,
+      "temporal": [
+        "identity_verified",
+        "order_confirmed"
+      ]
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-015",
+    "text": "退款前必须先完成身份认证和订单确认。",
+    "category": "Temporal refund",
+    "expected": {
+      "action": "refund",
+      "resource": "Order",
+      "destination": "AnyDestination",
+      "effect": "REQUIRE",
+      "approval": false,
+      "temporal": [
+        "identity_verified",
+        "order_confirmed"
+      ]
+    },
+    "split": "test"
+  },
+  {
+    "id": "PGT3-016",
+    "text": "执行退款之前，需要先身份验证，再确认订单。",
+    "category": "Temporal refund",
+    "expected": {
+      "action": "refund",
+      "resource": "Order",
+      "destination": "AnyDestination",
+      "effect": "REQUIRE",
+      "approval": false,
+      "temporal": [
+        "identity_verified",
+        "order_confirmed"
+      ]
+    },
+    "split": "dev"
+  },
+  {
+    "id": "PGT3-017",
+    "text": "退款前必须先完成身份认证和订单确认。",
+    "category": "Temporal refund",
+    "expected": {
+      "action": "refund",
+      "resource": "Order",
+      "destination": "AnyDestination",
+      "effect": "REQUIRE",
+      "approval": false,
+      "temporal": [
+        "identity_verified",
+        "order_confirmed"
+      ]
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-018",
+    "text": "执行退款之前，需要先身份验证，再确认订单。",
+    "category": "Temporal refund",
+    "expected": {
+      "action": "refund",
+      "resource": "Order",
+      "destination": "AnyDestination",
+      "effect": "REQUIRE",
+      "approval": false,
+      "temporal": [
+        "identity_verified",
+        "order_confirmed"
+      ]
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-019",
+    "text": "退款前必须先完成身份认证和订单确认。",
+    "category": "Temporal refund",
+    "expected": {
+      "action": "refund",
+      "resource": "Order",
+      "destination": "AnyDestination",
+      "effect": "REQUIRE",
+      "approval": false,
+      "temporal": [
+        "identity_verified",
+        "order_confirmed"
+      ]
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-020",
+    "text": "执行退款之前，需要先身份验证，再确认订单。",
+    "category": "Temporal refund",
+    "expected": {
+      "action": "refund",
+      "resource": "Order",
+      "destination": "AnyDestination",
+      "effect": "REQUIRE",
+      "approval": false,
+      "temporal": [
+        "identity_verified",
+        "order_confirmed"
+      ]
+    },
+    "split": "test"
+  },
+  {
+    "id": "PGT3-021",
+    "text": "金额 >= 2000 的操作需要主管审批。",
+    "category": "Threshold approval",
+    "expected": {
+      "action": "execute",
+      "resource": "FinanceData",
+      "destination": "AnyDestination",
+      "effect": "DENY_UNLESS",
+      "approval": true,
+      "threshold": 2000.0,
+      "temporal": []
+    },
+    "split": "dev"
+  },
+  {
+    "id": "PGT3-022",
+    "text": "金额 >= 2100 的操作需要主管审批。",
+    "category": "Threshold approval",
+    "expected": {
+      "action": "execute",
+      "resource": "FinanceData",
+      "destination": "AnyDestination",
+      "effect": "DENY_UNLESS",
+      "approval": true,
+      "threshold": 2100.0,
+      "temporal": []
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-023",
+    "text": "金额 >= 2200 的操作需要主管审批。",
+    "category": "Threshold approval",
+    "expected": {
+      "action": "execute",
+      "resource": "FinanceData",
+      "destination": "AnyDestination",
+      "effect": "DENY_UNLESS",
+      "approval": true,
+      "threshold": 2200.0,
+      "temporal": []
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-024",
+    "text": "金额 >= 2300 的操作需要主管审批。",
+    "category": "Threshold approval",
+    "expected": {
+      "action": "execute",
+      "resource": "FinanceData",
+      "destination": "AnyDestination",
+      "effect": "DENY_UNLESS",
+      "approval": true,
+      "threshold": 2300.0,
+      "temporal": []
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-025",
+    "text": "金额 >= 2400 的操作需要主管审批。",
+    "category": "Threshold approval",
+    "expected": {
+      "action": "execute",
+      "resource": "FinanceData",
+      "destination": "AnyDestination",
+      "effect": "DENY_UNLESS",
+      "approval": true,
+      "threshold": 2400.0,
+      "temporal": []
+    },
+    "split": "test"
+  },
+  {
+    "id": "PGT3-026",
+    "text": "金额 >= 2500 的操作需要主管审批。",
+    "category": "Threshold approval",
+    "expected": {
+      "action": "execute",
+      "resource": "FinanceData",
+      "destination": "AnyDestination",
+      "effect": "DENY_UNLESS",
+      "approval": true,
+      "threshold": 2500.0,
+      "temporal": []
+    },
+    "split": "dev"
+  },
+  {
+    "id": "PGT3-027",
+    "text": "金额 >= 2600 的操作需要主管审批。",
+    "category": "Threshold approval",
+    "expected": {
+      "action": "execute",
+      "resource": "FinanceData",
+      "destination": "AnyDestination",
+      "effect": "DENY_UNLESS",
+      "approval": true,
+      "threshold": 2600.0,
+      "temporal": []
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-028",
+    "text": "金额 >= 2700 的操作需要主管审批。",
+    "category": "Threshold approval",
+    "expected": {
+      "action": "execute",
+      "resource": "FinanceData",
+      "destination": "AnyDestination",
+      "effect": "DENY_UNLESS",
+      "approval": true,
+      "threshold": 2700.0,
+      "temporal": []
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-029",
+    "text": "金额 >= 2800 的操作需要主管审批。",
+    "category": "Threshold approval",
+    "expected": {
+      "action": "execute",
+      "resource": "FinanceData",
+      "destination": "AnyDestination",
+      "effect": "DENY_UNLESS",
+      "approval": true,
+      "threshold": 2800.0,
+      "temporal": []
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-030",
+    "text": "金额 >= 2900 的操作需要主管审批。",
+    "category": "Threshold approval",
+    "expected": {
+      "action": "execute",
+      "resource": "FinanceData",
+      "destination": "AnyDestination",
+      "effect": "DENY_UNLESS",
+      "approval": true,
+      "threshold": 2900.0,
+      "temporal": []
+    },
+    "split": "test"
+  },
+  {
+    "id": "PGT3-031",
+    "text": "禁止 Agent 读取敏感文件。",
+    "category": "Sensitive read deny",
+    "expected": {
+      "action": "read",
+      "resource": "File",
+      "destination": "AnyDestination",
+      "effect": "DENY",
+      "approval": false,
+      "temporal": []
+    },
+    "split": "dev"
+  },
+  {
+    "id": "PGT3-032",
+    "text": "Agent 不得读取文件中的 secret。",
+    "category": "Sensitive read deny",
+    "expected": {
+      "action": "read",
+      "resource": "SensitiveData",
+      "destination": "AnyDestination",
+      "effect": "DENY",
+      "approval": false,
+      "temporal": []
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-033",
+    "text": "禁止 Agent 读取敏感文件。",
+    "category": "Sensitive read deny",
+    "expected": {
+      "action": "read",
+      "resource": "File",
+      "destination": "AnyDestination",
+      "effect": "DENY",
+      "approval": false,
+      "temporal": []
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-034",
+    "text": "Agent 不得读取文件中的 secret。",
+    "category": "Sensitive read deny",
+    "expected": {
+      "action": "read",
+      "resource": "SensitiveData",
+      "destination": "AnyDestination",
+      "effect": "DENY",
+      "approval": false,
+      "temporal": []
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-035",
+    "text": "禁止 Agent 读取敏感文件。",
+    "category": "Sensitive read deny",
+    "expected": {
+      "action": "read",
+      "resource": "File",
+      "destination": "AnyDestination",
+      "effect": "DENY",
+      "approval": false,
+      "temporal": []
+    },
+    "split": "test"
+  },
+  {
+    "id": "PGT3-036",
+    "text": "Agent 不得读取文件中的 secret。",
+    "category": "Sensitive read deny",
+    "expected": {
+      "action": "read",
+      "resource": "SensitiveData",
+      "destination": "AnyDestination",
+      "effect": "DENY",
+      "approval": false,
+      "temporal": []
+    },
+    "split": "dev"
+  },
+  {
+    "id": "PGT3-037",
+    "text": "禁止 Agent 读取敏感文件。",
+    "category": "Sensitive read deny",
+    "expected": {
+      "action": "read",
+      "resource": "File",
+      "destination": "AnyDestination",
+      "effect": "DENY",
+      "approval": false,
+      "temporal": []
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-038",
+    "text": "Agent 不得读取文件中的 secret。",
+    "category": "Sensitive read deny",
+    "expected": {
+      "action": "read",
+      "resource": "SensitiveData",
+      "destination": "AnyDestination",
+      "effect": "DENY",
+      "approval": false,
+      "temporal": []
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-039",
+    "text": "禁止 Agent 读取敏感文件。",
+    "category": "Sensitive read deny",
+    "expected": {
+      "action": "read",
+      "resource": "File",
+      "destination": "AnyDestination",
+      "effect": "DENY",
+      "approval": false,
+      "temporal": []
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-040",
+    "text": "Agent 不得读取文件中的 secret。",
+    "category": "Sensitive read deny",
+    "expected": {
+      "action": "read",
+      "resource": "SensitiveData",
+      "destination": "AnyDestination",
+      "effect": "DENY",
+      "approval": false,
+      "temporal": []
+    },
+    "split": "test"
+  },
+  {
+    "id": "PGT3-041",
+    "text": "允许 Agent 读取内部文件。",
+    "category": "Benign allow",
+    "expected": {
+      "action": "read",
+      "resource": "File",
+      "destination": "InternalService",
+      "effect": "ALLOW",
+      "approval": false,
+      "temporal": []
+    },
+    "split": "dev"
+  },
+  {
+    "id": "PGT3-042",
+    "text": "可以访问内部 file。",
+    "category": "Benign allow",
+    "expected": {
+      "action": "read",
+      "resource": "File",
+      "destination": "InternalService",
+      "effect": "ALLOW",
+      "approval": false,
+      "temporal": []
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-043",
+    "text": "允许 Agent 读取内部文件。",
+    "category": "Benign allow",
+    "expected": {
+      "action": "read",
+      "resource": "File",
+      "destination": "InternalService",
+      "effect": "ALLOW",
+      "approval": false,
+      "temporal": []
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-044",
+    "text": "可以访问内部 file。",
+    "category": "Benign allow",
+    "expected": {
+      "action": "read",
+      "resource": "File",
+      "destination": "InternalService",
+      "effect": "ALLOW",
+      "approval": false,
+      "temporal": []
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-045",
+    "text": "允许 Agent 读取内部文件。",
+    "category": "Benign allow",
+    "expected": {
+      "action": "read",
+      "resource": "File",
+      "destination": "InternalService",
+      "effect": "ALLOW",
+      "approval": false,
+      "temporal": []
+    },
+    "split": "test"
+  },
+  {
+    "id": "PGT3-046",
+    "text": "可以访问内部 file。",
+    "category": "Benign allow",
+    "expected": {
+      "action": "read",
+      "resource": "File",
+      "destination": "InternalService",
+      "effect": "ALLOW",
+      "approval": false,
+      "temporal": []
+    },
+    "split": "dev"
+  },
+  {
+    "id": "PGT3-047",
+    "text": "允许 Agent 读取内部文件。",
+    "category": "Benign allow",
+    "expected": {
+      "action": "read",
+      "resource": "File",
+      "destination": "InternalService",
+      "effect": "ALLOW",
+      "approval": false,
+      "temporal": []
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-048",
+    "text": "可以访问内部 file。",
+    "category": "Benign allow",
+    "expected": {
+      "action": "read",
+      "resource": "File",
+      "destination": "InternalService",
+      "effect": "ALLOW",
+      "approval": false,
+      "temporal": []
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-049",
+    "text": "允许 Agent 读取内部文件。",
+    "category": "Benign allow",
+    "expected": {
+      "action": "read",
+      "resource": "File",
+      "destination": "InternalService",
+      "effect": "ALLOW",
+      "approval": false,
+      "temporal": []
+    },
+    "split": "train"
+  },
+  {
+    "id": "PGT3-050",
+    "text": "可以访问内部 file。",
+    "category": "Benign allow",
+    "expected": {
+      "action": "read",
+      "resource": "File",
+      "destination": "InternalService",
+      "effect": "ALLOW",
+      "approval": false,
+      "temporal": []
+    },
+    "split": "test"
+  }
+]

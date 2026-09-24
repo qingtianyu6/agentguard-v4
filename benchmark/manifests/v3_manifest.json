@@ -1,0 +1,25 @@
+{
+  "benchmark": "AgentGuard-Bench V3 Candidate 100",
+  "scenario_count": 100,
+  "policy_ground_truth_count": 50,
+  "splits": {
+    "train": 60,
+    "dev": 20,
+    "test": 20
+  },
+  "categories": {
+    "Cross-Agent Leakage": 14,
+    "Indirect Prompt Injection": 12,
+    "Memory Poisoning": 14,
+    "Privilege Escalation": 12,
+    "Sensitive Data Leakage": 12,
+    "Temporal Constraint Violation": 12,
+    "Tool Description Poisoning": 12,
+    "Unauthorized Tool Use": 12
+  },
+  "scenario_sha256": "0654b806e1f17cc5f7ff12963dc65da5e749d83ffb47d63b74d8d85557be26ea",
+  "policy_sha256": "6286c6c781f599c7ecf82dba206ea5c08a2296b9d19df9f60bd199a65f49828d",
+  "frozen_seed": 42,
+  "label_process": "template-generated + order-bound synthetic events + regression tests; independent human review required",
+  "ground_truth_status": "candidate_labels_pending_human_review"
+}

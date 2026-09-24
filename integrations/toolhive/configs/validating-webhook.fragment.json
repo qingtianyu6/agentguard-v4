@@ -1,0 +1,18 @@
+{
+  "middleware_configs": [
+    {
+      "type": "validating-webhook",
+      "parameters": {
+        "webhooks": [
+          {
+            "name": "agentguard-pdp",
+            "url": "https://agentguard.internal/gateway/v1/toolhive/validate",
+            "timeout": "5s",
+            "failure_policy": "fail",
+            "hmac_secret_ref": "/run/secrets/agentguard_toolhive_hmac"
+          }
+        ]
+      }
+    }
+  ]
+}

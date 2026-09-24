@@ -1,0 +1,26 @@
+{
+  "scope": "versions exercised in this workspace; not a full supply-chain SBOM",
+  "dependencies": {
+    "mcp": "2.2.0",
+    "z3-solver": "5.1.0.0",
+    "cisco-ai-mcp-scanner": "4.8.4",
+    "networkx": "3.7",
+    "neo4j": "6.3.1",
+    "langgraph": "1.2.12",
+    "opentelemetry-sdk": "1.44.0",
+    "agentdojo": "0.1.35",
+    "fastapi": "0.128.2",
+    "SQLAlchemy": "2.0.50"
+  },
+  "repositories": {
+    "stacklok/toolhive": {
+      "commit": "2b299c1f48ad3b64aadceb5bf89582ff686f590a",
+      "status": "source inspected; not integrated or deployed"
+    },
+    "cedar-policy/cedar": {
+      "release": "cedar-policy-cli-v4.13.0",
+      "sha256": "deb3a8340e357b871eb7c3e2a701f9a4f2e2f8404ec249740b1ed9eef5a0aefe",
+      "status": "external CLI binary exercised; not redistributed in this code package"
+    }
+  }
+}

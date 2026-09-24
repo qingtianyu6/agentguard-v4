@@ -1,0 +1,7 @@
+{
+  "kind": "runtime-ablation",
+  "split": "test",
+  "seed": 42,
+  "modes": ["no_guard", "single_step", "trajectory_full"],
+  "dataset": "benchmark/scenarios/agentguard_bench_v3_100.json"
+}

@@ -1,0 +1,7 @@
+-r requirements-dev.txt
+cisco-ai-mcp-scanner==4.8.4
+networkx>=3,<4
+neo4j>=6,<7
+langgraph>=1,<2
+opentelemetry-sdk>=1.30,<2
+agentdojo==0.1.35

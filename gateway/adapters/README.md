@@ -1,0 +1,9 @@
+# MCP adapter scope
+
+`mcp_client.py` uses the official MCP Python SDK for stdio and Streamable HTTP sessions. Tool ID and schema/description fingerprints are checked before invoking the server. The caller must provide an authoritative `decide` function and keep MCP transport credentials exclusively in the gateway. A test fixture demonstrates 3 real MCP tools, a blocked side effect and an allowed call. ToolHive PDP and Cisco scanner integrations are not supplied by this adapter. A `scan_reference` is evidence of a scan supplied by the trusted deployment; the current registry does not perform scanning.
+
+`runtime_bridge.py` connects a guarded MCP client to the backend preflight, commit, and result endpoints. Pass `bridge.preflight` as `decide` and `bridge` as `lifecycle`. Successful MCP results are recorded once with a result digest and provenance reference; failed MCP results do not enter trusted lineage. The stdio connector accepts an explicit environment mapping for server-specific configuration.
+
+In strict mode, an approver registers each real MCP tool through `POST /api/v1/trust/mcp-tools` with server ID, tool ID, allowed actions, discovered description and schema, scan reference, scan report SHA-256, and `reviewed: true`. The adapter submits fingerprints of the discovered tool at preflight. Unknown, drifted, or quarantined tools are denied; commit checks trust again. `POST /api/v1/trust/mcp-tools/{id}/quarantine` revokes future commits. These records survive process restarts in the configured database.
+
+The registration endpoint records an approver attestation; it does not yet validate that the referenced scan report was actually produced by Cisco MCP Scanner. The bridge does not enforce network egress isolation. A committed call whose tool succeeds but whose result report fails also needs operational reconciliation before its evidence can be considered complete.

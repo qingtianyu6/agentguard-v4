@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AgentGuard Bench curated scenario v1",
+  "type": "object",
+  "required": ["id", "task", "environment", "policy", "payload", "history", "category", "variant", "expected_decision", "allowed_alternative", "evidence", "template_family", "split", "source", "reviews"],
+  "properties": {
+    "id": {"type": "string", "minLength": 1},
+    "task": {"type": "string", "minLength": 10},
+    "environment": {"type": "string", "minLength": 1},
+    "policy": {"type": "string", "minLength": 1},
+    "payload": {"type": "object", "required": ["agent_id", "tool_id", "action"]},
+    "history": {"type": "array", "items": {"type": "object"}},
+    "category": {"enum": ["Indirect Prompt Injection", "Tool Description Poisoning", "Sensitive Data Leakage", "Unauthorized Tool Use", "Privilege Escalation", "Temporal Constraint Violation", "Cross-Agent Leakage", "Memory Poisoning"]},
+    "variant": {"enum": ["attack", "benign", "ambiguous", "approval"]},
+    "expected_decision": {"enum": ["ALLOW", "ASK", "REPAIR", "DENY"]},
+    "allowed_alternative": {"type": "string"},
+    "evidence": {"type": "string", "minLength": 1},
+    "template_family": {"type": "string", "minLength": 1},
+    "split": {"enum": ["train", "dev", "test"]},
+    "source": {"type": "object", "required": ["type", "reference"], "properties": {"type": {"enum": ["original", "external"]}, "reference": {"type": "string", "minLength": 1}}},
+    "reviews": {"type": "array", "minItems": 2, "items": {"type": "object", "required": ["reviewer_id", "decision", "rationale"], "properties": {"reviewer_id": {"type": "string", "minLength": 1}, "decision": {"enum": ["ALLOW", "ASK", "REPAIR", "DENY"]}, "rationale": {"type": "string", "minLength": 1}}}}
+  },
+  "additionalProperties": true
+}

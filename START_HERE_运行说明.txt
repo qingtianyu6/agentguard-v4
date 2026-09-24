@@ -1,0 +1,53 @@
+====================================================
+          智契 · AgentGuard V3.0 运行说明
+====================================================
+
+【最快启动】
+项目根目录 PowerShell：
+
+    .\scripts\start_all.ps1
+
+访问：
+    前端     http://127.0.0.1:5173
+    后端     http://127.0.0.1:8000
+    Swagger  http://127.0.0.1:8000/docs
+
+【如果分别启动】
+后端：
+    .\scripts\run_backend.ps1
+
+前端：
+    .\scripts\run_frontend.ps1
+
+【V3 最值得先看的 6 个动作】
+1. Policy Studio：运行 P2C-V V3，看 Graph IR + Formal IR + Model Check + SMT-LIB2。
+2. Live Runtime：读取 readme.txt，确认 ALLOW 且 Tool 真执行。
+3. Live Runtime：读取 .env，确认 DENY 且 Tool NOT REACHED。
+4. Live Runtime：退款，确认 REPAIR → 自动补前置步骤 → Recheck ALLOW。
+5. Live Runtime：运行 Cross-Agent Leakage / Memory Poisoning。
+6. Attack Lab：看 Frozen Test 的 No Guard / Single-Step / Full Trajectory 消融。
+
+【默认数据库】
+backend\agentguard.db
+
+【可选 Z3】
+    cd backend
+    pip install -r requirements-formal.txt
+
+【可选本地 Ollama / OpenAI-compatible Extractor】
+在 backend/.env 或环境变量中设置：
+    AGENTGUARD_EXTRACTOR=auto
+    AGENTGUARD_LLM_BASE_URL=http://127.0.0.1:11434/v1
+    AGENTGUARD_LLM_MODEL=qwen3:8b
+
+不配置也可以完整运行，默认使用离线 deterministic extractor。
+
+【测试】
+    cd backend
+    python -m pytest -q
+
+打包前结果：15 passed
+
+【重要数据说明】
+benchmark 中的 100 Scenario 与 50 Policy Case 当前是“候选标注集”。
+在国赛/论文材料正式写成人工 Ground Truth 前，需要完成双人独立标注和冲突复核。

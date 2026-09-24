@@ -1,0 +1,5 @@
+# AgentDojo external benchmark integration
+
+`adapter.py` supplies an AgentDojo 0.1.35 `ToolsExecutor` substitute. Insert `AgentGuardToolsExecutor(decide, allowed_tools)` at the tool executor position in a `ToolsExecutionLoop`; `decide` must synchronously call a trusted AgentGuard policy decision service, not a model supplied boolean. Both the allowlist and policy verdict must pass. A denied tool call is returned to the agent as `AgentGuardDenied` before the function executes; nested tool calls are rejected until each child can be independently authorized. Execution events keep trace ID and whether the tool actually completed.
+
+The integration test uses AgentDojo's actual `FunctionsRuntime` and checks a denied side effect, an allowed side effect and nested-call rejection. No upstream AgentDojo task, attack, model or full suite was run. Run any future AgentDojo suite under its own external benchmark namespace with source IDs and upstream version; do not merge external examples into AgentGuard-Bench or report attack success from the adapter test.

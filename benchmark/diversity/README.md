@@ -1,0 +1,1 @@
+The curated validator in `benchmark/runner/validate.py` reports family ratio, duplicate content and split leakage. Semantic uniqueness still requires human inspection; hashed tasks alone are insufficient.

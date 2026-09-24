@@ -1,0 +1,2513 @@
+openapi: 3.1.0
+info:
+  title: AgentGuard API
+  version: 1.0.0
+  description: Control-plane and runtime gateway API for AgentGuard.
+servers:
+- url: https://localhost:8000
+tags:
+- name: System & Auth
+- name: Dashboard
+- name: Agents
+- name: MCP & Tools
+- name: Policy Studio
+- name: P2C-V Compiler
+- name: Contracts & Policy Engine
+- name: Gateway Runtime
+- name: Trajectory & Provenance
+- name: Decisions, Risks & Approvals
+- name: Safe Recovery
+- name: Evidence & Audit
+- name: Attack Lab
+- name: Benchmark
+- name: Experiments
+paths:
+  /api/v1/health:
+    get:
+      tags:
+      - System & Auth
+      summary: 健康检查
+      operationId: get_api_v1_health
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security: []
+  /api/v1/version:
+    get:
+      tags:
+      - System & Auth
+      summary: 版本/构建信息
+      operationId: get_api_v1_version
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security: []
+  /api/v1/capabilities:
+    get:
+      tags:
+      - System & Auth
+      summary: 当前启用能力与算法版本
+      operationId: get_api_v1_capabilities
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+  /api/v1/auth/login:
+    post:
+      tags:
+      - System & Auth
+      summary: 登录获取 access token
+      operationId: post_api_v1_auth_login
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+  /api/v1/auth/refresh:
+    post:
+      tags:
+      - System & Auth
+      summary: 刷新 token
+      operationId: post_api_v1_auth_refresh
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+  /api/v1/auth/me:
+    get:
+      tags:
+      - System & Auth
+      summary: 当前用户信息
+      operationId: get_api_v1_auth_me
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+  /api/v1/api-keys:
+    get:
+      tags:
+      - System & Auth
+      summary: API Key 列表
+      operationId: get_api_v1_api_keys
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - System & Auth
+      summary: 创建 Agent/Gateway API Key
+      operationId: post_api_v1_api_keys
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+  /api/v1/api-keys/{key_id}:
+    delete:
+      tags:
+      - System & Auth
+      summary: 吊销 API Key
+      operationId: delete_api_v1_api_keys_key_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: key_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/dashboard/overview:
+    get:
+      tags:
+      - Dashboard
+      summary: Security Overview 总览
+      operationId: get_api_v1_dashboard_overview
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+  /api/v1/dashboard/metrics:
+    get:
+      tags:
+      - Dashboard
+      summary: ALLOW/ASK/REPAIR/DENY、ASR/FPR 等指标
+      operationId: get_api_v1_dashboard_metrics
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+  /api/v1/dashboard/risks:
+    get:
+      tags:
+      - Dashboard
+      summary: 活跃风险列表
+      operationId: get_api_v1_dashboard_risks
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+  /api/v1/dashboard/timeline:
+    get:
+      tags:
+      - Dashboard
+      summary: 安全事件时间线
+      operationId: get_api_v1_dashboard_timeline
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+  /api/v1/agents:
+    get:
+      tags:
+      - Agents
+      summary: Agent 列表
+      operationId: get_api_v1_agents
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - Agents
+      summary: 注册 Agent
+      operationId: post_api_v1_agents
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+  /api/v1/agents/{agent_id}:
+    get:
+      tags:
+      - Agents
+      summary: Agent 详情
+      operationId: get_api_v1_agents_agent_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: agent_id
+        in: path
+        required: true
+        schema:
+          type: string
+    patch:
+      tags:
+      - Agents
+      summary: 修改 Agent 配置
+      operationId: patch_api_v1_agents_agent_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+      parameters:
+      - name: agent_id
+        in: path
+        required: true
+        schema:
+          type: string
+    delete:
+      tags:
+      - Agents
+      summary: 停用/删除 Agent
+      operationId: delete_api_v1_agents_agent_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: agent_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/agents/{agent_id}/test-connection:
+    post:
+      tags:
+      - Agents
+      summary: 连接测试
+      operationId: post_api_v1_agents_agent_id_test_connection
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: agent_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/agents/{agent_id}/sessions:
+    get:
+      tags:
+      - Agents
+      summary: Agent 会话/轨迹列表
+      operationId: get_api_v1_agents_agent_id_sessions
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: agent_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/mcp/servers:
+    get:
+      tags:
+      - MCP & Tools
+      summary: MCP Server 列表
+      operationId: get_api_v1_mcp_servers
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - MCP & Tools
+      summary: 注册 MCP Server
+      operationId: post_api_v1_mcp_servers
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+  /api/v1/mcp/servers/{server_id}:
+    get:
+      tags:
+      - MCP & Tools
+      summary: MCP Server 详情
+      operationId: get_api_v1_mcp_servers_server_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: server_id
+        in: path
+        required: true
+        schema:
+          type: string
+    patch:
+      tags:
+      - MCP & Tools
+      summary: 修改 MCP Server
+      operationId: patch_api_v1_mcp_servers_server_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+      parameters:
+      - name: server_id
+        in: path
+        required: true
+        schema:
+          type: string
+    delete:
+      tags:
+      - MCP & Tools
+      summary: 停用 MCP Server
+      operationId: delete_api_v1_mcp_servers_server_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: server_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/mcp/servers/{server_id}/discover:
+    post:
+      tags:
+      - MCP & Tools
+      summary: 发现 tools/resources/prompts
+      operationId: post_api_v1_mcp_servers_server_id_discover
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: server_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/tools:
+    get:
+      tags:
+      - MCP & Tools
+      summary: 工具目录
+      operationId: get_api_v1_tools
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+  /api/v1/tools/{tool_id}:
+    get:
+      tags:
+      - MCP & Tools
+      summary: 工具详情/描述/风险标签
+      operationId: get_api_v1_tools_tool_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: tool_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/tools/{tool_id}/risk-profile:
+    patch:
+      tags:
+      - MCP & Tools
+      summary: 更新工具风险画像
+      operationId: patch_api_v1_tools_tool_id_risk_profile
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+      parameters:
+      - name: tool_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/policies:
+    get:
+      tags:
+      - Policy Studio
+      summary: 策略列表
+      operationId: get_api_v1_policies
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - Policy Studio
+      summary: 新建自然语言策略
+      operationId: post_api_v1_policies
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyCreate'
+  /api/v1/policies/{policy_id}:
+    get:
+      tags:
+      - Policy Studio
+      summary: 策略详情
+      operationId: get_api_v1_policies_policy_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: policy_id
+        in: path
+        required: true
+        schema:
+          type: string
+    patch:
+      tags:
+      - Policy Studio
+      summary: 编辑草稿策略
+      operationId: patch_api_v1_policies_policy_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+      parameters:
+      - name: policy_id
+        in: path
+        required: true
+        schema:
+          type: string
+    delete:
+      tags:
+      - Policy Studio
+      summary: 删除草稿/归档策略
+      operationId: delete_api_v1_policies_policy_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: policy_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/policies/{policy_id}/compile:
+    post:
+      tags:
+      - Policy Studio
+      summary: 执行 P2C-V 完整编译
+      operationId: post_api_v1_policies_policy_id_compile
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+      parameters:
+      - name: policy_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/policies/{policy_id}/compilations/{job_id}:
+    get:
+      tags:
+      - Policy Studio
+      summary: 编译状态/结果
+      operationId: get_api_v1_policies_policy_id_compilations_job_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: policy_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: job_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/policies/{policy_id}/validate:
+    post:
+      tags:
+      - Policy Studio
+      summary: 语法+语义校验
+      operationId: post_api_v1_policies_policy_id_validate
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+      parameters:
+      - name: policy_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/policies/{policy_id}/review:
+    post:
+      tags:
+      - Policy Studio
+      summary: 人工 Review 结论
+      operationId: post_api_v1_policies_policy_id_review
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+      parameters:
+      - name: policy_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/policies/{policy_id}/activate:
+    post:
+      tags:
+      - Policy Studio
+      summary: 激活已验证策略
+      operationId: post_api_v1_policies_policy_id_activate
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+      parameters:
+      - name: policy_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/policies/{policy_id}/deactivate:
+    post:
+      tags:
+      - Policy Studio
+      summary: 停用策略
+      operationId: post_api_v1_policies_policy_id_deactivate
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: policy_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/policies/{policy_id}/versions:
+    get:
+      tags:
+      - Policy Studio
+      summary: 策略版本历史
+      operationId: get_api_v1_policies_policy_id_versions
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: policy_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/policies/{policy_id}/diff:
+    get:
+      tags:
+      - Policy Studio
+      summary: 版本 Diff
+      operationId: get_api_v1_policies_policy_id_diff
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: policy_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/policies/{policy_id}/impact:
+    get:
+      tags:
+      - Policy Studio
+      summary: 受影响 Agent/Tool/Workflow
+      operationId: get_api_v1_policies_policy_id_impact
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: policy_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/policies/{policy_id}/historical-replay:
+    post:
+      tags:
+      - Policy Studio
+      summary: 历史轨迹回放
+      operationId: post_api_v1_policies_policy_id_historical_replay
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+      parameters:
+      - name: policy_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/compiler/parse:
+    post:
+      tags:
+      - P2C-V Compiler
+      summary: 自然语言 → Structured Requirement
+      operationId: post_api_v1_compiler_parse
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+  /api/v1/compiler/requirement-graph:
+    post:
+      tags:
+      - P2C-V Compiler
+      summary: Structured Requirement → Requirement Graph
+      operationId: post_api_v1_compiler_requirement_graph
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+  /api/v1/compiler/generate-contract:
+    post:
+      tags:
+      - P2C-V Compiler
+      summary: Requirement Graph → Policy DSL/逻辑约束
+      operationId: post_api_v1_compiler_generate_contract
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+  /api/v1/compiler/counterexamples:
+    post:
+      tags:
+      - P2C-V Compiler
+      summary: 反例搜索/验证
+      operationId: post_api_v1_compiler_counterexamples
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+  /api/v1/compiler/semantic-repair:
+    post:
+      tags:
+      - P2C-V Compiler
+      summary: 根据反例进行语义修复
+      operationId: post_api_v1_compiler_semantic_repair
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+  /api/v1/compiler/verify:
+    post:
+      tags:
+      - P2C-V Compiler
+      summary: 最终 Verified Contract 验证
+      operationId: post_api_v1_compiler_verify
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+  /api/v1/contracts:
+    get:
+      tags:
+      - Contracts & Policy Engine
+      summary: 可执行契约列表
+      operationId: get_api_v1_contracts
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+  /api/v1/contracts/{contract_id}:
+    get:
+      tags:
+      - Contracts & Policy Engine
+      summary: 契约详情
+      operationId: get_api_v1_contracts_contract_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: contract_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/contracts/{contract_id}/evaluate:
+    post:
+      tags:
+      - Contracts & Policy Engine
+      summary: 离线评估单个动作/轨迹
+      operationId: post_api_v1_contracts_contract_id_evaluate
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+      parameters:
+      - name: contract_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/contracts/{contract_id}/test-cases:
+    post:
+      tags:
+      - Contracts & Policy Engine
+      summary: 执行契约测试用例
+      operationId: post_api_v1_contracts_contract_id_test_cases
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+      parameters:
+      - name: contract_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/contracts/{contract_id}/logic:
+    get:
+      tags:
+      - Contracts & Policy Engine
+      summary: 查看 DSL/FSM/Datalog/SMT 表示
+      operationId: get_api_v1_contracts_contract_id_logic
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: contract_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /gateway/v1/sessions:
+    post:
+      tags:
+      - Gateway Runtime
+      summary: 建立受保护 Agent Session
+      operationId: post_gateway_v1_sessions
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - AgentGuardKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+  /gateway/v1/actions/preflight:
+    post:
+      tags:
+      - Gateway Runtime
+      summary: Tool Call 执行前拦截判定
+      operationId: post_gateway_v1_actions_preflight
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Decision'
+      security:
+      - AgentGuardKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActionPreflightRequest'
+  /gateway/v1/actions/{action_id}/approval-context:
+    post:
+      tags:
+      - Gateway Runtime
+      summary: 补充用户/主管审批上下文
+      operationId: post_gateway_v1_actions_action_id_approval_context
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - AgentGuardKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+      parameters:
+      - name: action_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /gateway/v1/actions/{action_id}/commit:
+    post:
+      tags:
+      - Gateway Runtime
+      summary: 声明动作即将真实执行
+      operationId: post_gateway_v1_actions_action_id_commit
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - AgentGuardKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+      parameters:
+      - name: action_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /gateway/v1/actions/{action_id}/result:
+    post:
+      tags:
+      - Gateway Runtime
+      summary: 上报 Tool 执行结果
+      operationId: post_gateway_v1_actions_action_id_result
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - AgentGuardKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActionResultRequest'
+      parameters:
+      - name: action_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /gateway/v1/actions/{action_id}/abort:
+    post:
+      tags:
+      - Gateway Runtime
+      summary: Agent 放弃该动作
+      operationId: post_gateway_v1_actions_action_id_abort
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - AgentGuardKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+      parameters:
+      - name: action_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /gateway/v1/sessions/{session_id}/close:
+    post:
+      tags:
+      - Gateway Runtime
+      summary: 关闭 Session
+      operationId: post_gateway_v1_sessions_session_id_close
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - AgentGuardKey: []
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /gateway/v1/mcp/call:
+    post:
+      tags:
+      - Gateway Runtime
+      summary: MCP Tool Call 代理入口
+      operationId: post_gateway_v1_mcp_call
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - AgentGuardKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+  /api/v1/trajectories:
+    get:
+      tags:
+      - Trajectory & Provenance
+      summary: 轨迹列表
+      operationId: get_api_v1_trajectories
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+  /api/v1/trajectories/{trace_id}:
+    get:
+      tags:
+      - Trajectory & Provenance
+      summary: 轨迹详情
+      operationId: get_api_v1_trajectories_trace_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: trace_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/trajectories/{trace_id}/events:
+    get:
+      tags:
+      - Trajectory & Provenance
+      summary: 轨迹事件序列
+      operationId: get_api_v1_trajectories_trace_id_events
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: trace_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/trajectories/{trace_id}/context:
+    get:
+      tags:
+      - Trajectory & Provenance
+      summary: Context Reconstruction 结果
+      operationId: get_api_v1_trajectories_trace_id_context
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: trace_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/trajectories/{trace_id}/provenance:
+    get:
+      tags:
+      - Trajectory & Provenance
+      summary: Provenance Graph
+      operationId: get_api_v1_trajectories_trace_id_provenance
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: trace_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/trajectories/{trace_id}/information-flow:
+    get:
+      tags:
+      - Trajectory & Provenance
+      summary: 数据流/敏感传播分析
+      operationId: get_api_v1_trajectories_trace_id_information_flow
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: trace_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/trajectories/{trace_id}/replay:
+    post:
+      tags:
+      - Trajectory & Provenance
+      summary: 按指定契约重放
+      operationId: post_api_v1_trajectories_trace_id_replay
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+      parameters:
+      - name: trace_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/decisions:
+    get:
+      tags:
+      - Decisions, Risks & Approvals
+      summary: 安全判定列表
+      operationId: get_api_v1_decisions
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+  /api/v1/decisions/{decision_id}:
+    get:
+      tags:
+      - Decisions, Risks & Approvals
+      summary: 判定详情+证据
+      operationId: get_api_v1_decisions_decision_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: decision_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/risks:
+    get:
+      tags:
+      - Decisions, Risks & Approvals
+      summary: 风险事件列表
+      operationId: get_api_v1_risks
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+  /api/v1/risks/{risk_id}:
+    get:
+      tags:
+      - Decisions, Risks & Approvals
+      summary: 风险详情
+      operationId: get_api_v1_risks_risk_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: risk_id
+        in: path
+        required: true
+        schema:
+          type: string
+    patch:
+      tags:
+      - Decisions, Risks & Approvals
+      summary: 风险处置状态/备注
+      operationId: patch_api_v1_risks_risk_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+      parameters:
+      - name: risk_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/approvals:
+    get:
+      tags:
+      - Decisions, Risks & Approvals
+      summary: 待审批列表
+      operationId: get_api_v1_approvals
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+  /api/v1/approvals/{approval_id}:
+    get:
+      tags:
+      - Decisions, Risks & Approvals
+      summary: 审批详情
+      operationId: get_api_v1_approvals_approval_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: approval_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/approvals/{approval_id}/approve:
+    post:
+      tags:
+      - Decisions, Risks & Approvals
+      summary: 同意
+      operationId: post_api_v1_approvals_approval_id_approve
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+      parameters:
+      - name: approval_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/approvals/{approval_id}/reject:
+    post:
+      tags:
+      - Decisions, Risks & Approvals
+      summary: 拒绝
+      operationId: post_api_v1_approvals_approval_id_reject
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+      parameters:
+      - name: approval_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/recovery/plan:
+    post:
+      tags:
+      - Safe Recovery
+      summary: 生成安全替代路径
+      operationId: post_api_v1_recovery_plan
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecoveryPlanRequest'
+  /api/v1/recovery/validate:
+    post:
+      tags:
+      - Safe Recovery
+      summary: 验证恢复路径 Safe(P',C)
+      operationId: post_api_v1_recovery_validate
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+  /api/v1/recovery/{recovery_id}/approve:
+    post:
+      tags:
+      - Safe Recovery
+      summary: 人工批准恢复路径
+      operationId: post_api_v1_recovery_recovery_id_approve
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+      parameters:
+      - name: recovery_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/recovery/{recovery_id}/execute:
+    post:
+      tags:
+      - Safe Recovery
+      summary: 执行/返回可执行恢复步骤
+      operationId: post_api_v1_recovery_recovery_id_execute
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+      parameters:
+      - name: recovery_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/recovery/{recovery_id}:
+    get:
+      tags:
+      - Safe Recovery
+      summary: 恢复记录详情
+      operationId: get_api_v1_recovery_recovery_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: recovery_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/audit/events:
+    get:
+      tags:
+      - Evidence & Audit
+      summary: 不可变审计事件
+      operationId: get_api_v1_audit_events
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+  /api/v1/audit/traces/{trace_id}:
+    get:
+      tags:
+      - Evidence & Audit
+      summary: 单轨迹完整证据链
+      operationId: get_api_v1_audit_traces_trace_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: trace_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/audit/evidence/{evidence_id}:
+    get:
+      tags:
+      - Evidence & Audit
+      summary: 证据对象/哈希链验证
+      operationId: get_api_v1_audit_evidence_evidence_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: evidence_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/audit/verify-chain:
+    post:
+      tags:
+      - Evidence & Audit
+      summary: 验证 hash chain
+      operationId: post_api_v1_audit_verify_chain
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+  /api/v1/audit/reports:
+    post:
+      tags:
+      - Evidence & Audit
+      summary: 生成审计报告
+      operationId: post_api_v1_audit_reports
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+  /api/v1/audit/reports/{report_id}:
+    get:
+      tags:
+      - Evidence & Audit
+      summary: 报告元数据/生成状态
+      operationId: get_api_v1_audit_reports_report_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: report_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/audit/reports/{report_id}/download:
+    get:
+      tags:
+      - Evidence & Audit
+      summary: 下载 PDF/JSON 报告
+      operationId: get_api_v1_audit_reports_report_id_download
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: report_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/attack-lab/scenarios:
+    get:
+      tags:
+      - Attack Lab
+      summary: 攻击场景库
+      operationId: get_api_v1_attack_lab_scenarios
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+  /api/v1/attack-lab/scenarios/{scenario_id}:
+    get:
+      tags:
+      - Attack Lab
+      summary: 场景详情
+      operationId: get_api_v1_attack_lab_scenarios_scenario_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: scenario_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/attack-lab/runs:
+    post:
+      tags:
+      - Attack Lab
+      summary: 运行攻击实验
+      operationId: post_api_v1_attack_lab_runs
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+  /api/v1/attack-lab/runs/{run_id}:
+    get:
+      tags:
+      - Attack Lab
+      summary: 运行状态/结果
+      operationId: get_api_v1_attack_lab_runs_run_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/attack-lab/compare:
+    post:
+      tags:
+      - Attack Lab
+      summary: AgentGuard OFF vs ON 对比
+      operationId: post_api_v1_attack_lab_compare
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+  /api/v1/benchmarks:
+    get:
+      tags:
+      - Benchmark
+      summary: Benchmark 版本列表
+      operationId: get_api_v1_benchmarks
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - Benchmark
+      summary: 创建 Benchmark 版本
+      operationId: post_api_v1_benchmarks
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+  /api/v1/benchmarks/{benchmark_id}/scenarios:
+    get:
+      tags:
+      - Benchmark
+      summary: Scenario 列表
+      operationId: get_api_v1_benchmarks_benchmark_id_scenarios
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: benchmark_id
+        in: path
+        required: true
+        schema:
+          type: string
+    post:
+      tags:
+      - Benchmark
+      summary: 新增 Scenario
+      operationId: post_api_v1_benchmarks_benchmark_id_scenarios
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+      parameters:
+      - name: benchmark_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/benchmarks/{benchmark_id}/validate:
+    post:
+      tags:
+      - Benchmark
+      summary: 格式/标签/泄漏检查
+      operationId: post_api_v1_benchmarks_benchmark_id_validate
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+      parameters:
+      - name: benchmark_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/benchmarks/{benchmark_id}/freeze:
+    post:
+      tags:
+      - Benchmark
+      summary: 冻结 Test Split
+      operationId: post_api_v1_benchmarks_benchmark_id_freeze
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+      parameters:
+      - name: benchmark_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/benchmarks/{benchmark_id}/runs:
+    post:
+      tags:
+      - Benchmark
+      summary: 执行 Benchmark
+      operationId: post_api_v1_benchmarks_benchmark_id_runs
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+      parameters:
+      - name: benchmark_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/benchmarks/runs/{run_id}:
+    get:
+      tags:
+      - Benchmark
+      summary: 运行状态
+      operationId: get_api_v1_benchmarks_runs_run_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/benchmarks/runs/{run_id}/metrics:
+    get:
+      tags:
+      - Benchmark
+      summary: ASR/FPR/STC/Recovery/Latency 等
+      operationId: get_api_v1_benchmarks_runs_run_id_metrics
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/benchmarks/runs/{run_id}/failures:
+    get:
+      tags:
+      - Benchmark
+      summary: 失败案例分析
+      operationId: get_api_v1_benchmarks_runs_run_id_failures
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/experiments/configs:
+    get:
+      tags:
+      - Experiments
+      summary: 正式实验配置
+      operationId: get_api_v1_experiments_configs
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - Experiments
+      summary: 创建实验配置快照
+      operationId: post_api_v1_experiments_configs
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+  /api/v1/experiments/runs:
+    post:
+      tags:
+      - Experiments
+      summary: 启动 baseline/main/ablation/sensitivity/efficiency
+      operationId: post_api_v1_experiments_runs
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+  /api/v1/experiments/runs/{run_id}:
+    get:
+      tags:
+      - Experiments
+      summary: 实验运行状态
+      operationId: get_api_v1_experiments_runs_run_id
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/experiments/runs/{run_id}/results:
+    get:
+      tags:
+      - Experiments
+      summary: raw/metrics/summary 索引
+      operationId: get_api_v1_experiments_runs_run_id_results
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /api/v1/experiments/compare:
+    get:
+      tags:
+      - Experiments
+      summary: 多实验对比
+      operationId: get_api_v1_experiments_compare
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+  /api/v1/experiments/{run_id}/figures:
+    post:
+      tags:
+      - Experiments
+      summary: 生成比赛图表数据/图
+      operationId: post_api_v1_experiments_run_id_figures
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericObject'
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericObject'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema:
+          type: string
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    AgentGuardKey:
+      type: apiKey
+      in: header
+      name: X-AgentGuard-Key
+  schemas:
+    GenericObject:
+      type: object
+      additionalProperties: true
+    Decision:
+      type: object
+      required:
+      - decision
+      properties:
+        decision:
+          type: string
+          enum:
+          - ALLOW
+          - ASK
+          - REPAIR
+          - DENY
+        decision_id:
+          type: string
+        action_id:
+          type: string
+        risk_level:
+          type: string
+        matched_contracts:
+          type: array
+          items:
+            type: string
+        required_conditions:
+          type: array
+          items:
+            type: string
+        latency_ms:
+          type: integer
+    ActionPreflightRequest:
+      type: object
+      required:
+      - session_id
+      - agent_id
+      - tool_call
+      properties:
+        session_id:
+          type: string
+        agent_id:
+          type: string
+        tool_call:
+          $ref: '#/components/schemas/GenericObject'
+        resource_refs:
+          type: array
+          items:
+            type: string
+        declared_destination:
+          type: string
+        client_context:
+          $ref: '#/components/schemas/GenericObject'
+    ActionResultRequest:
+      type: object
+      required:
+      - status
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCEEDED
+          - FAILED
+        result_ref:
+          type: string
+        result_summary:
+          $ref: '#/components/schemas/GenericObject'
+        duration_ms:
+          type: integer
+    PolicyCreate:
+      type: object
+      required:
+      - name
+      - natural_language
+      properties:
+        name:
+          type: string
+        natural_language:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+    RecoveryPlanRequest:
+      type: object
+      required:
+      - action_id
+      properties:
+        action_id:
+          type: string
+        max_action_distance:
+          type: number
+        require_human_approval:
+          type: boolean
+x-realtime:
+- /ws/v1/runtime
+- /ws/v1/trajectories/{trace_id}
+- /ws/v1/attack-lab/runs/{run_id}
+- /ws/v1/experiments/runs/{run_id}
+- /api/v1/compilations/{job_id}/events

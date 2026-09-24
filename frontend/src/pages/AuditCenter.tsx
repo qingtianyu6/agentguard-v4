@@ -1,0 +1,14 @@
+import React,{useEffect,useState} from 'react';
+import {api} from '../api/client';
+import {PageShell,SectionTitle,Empty} from '../components/Chrome';
+import {ShieldCheck,Link2,FileKey2,RefreshCw,Download,Hash,Clock,CheckCircle2,Database,LockKeyhole} from 'lucide-react';
+export default function AuditCenter(){
+ const [events,setEvents]=useState<any[]>([]),[verify,setVerify]=useState<any>(null),[report,setReport]=useState<any>(null);
+ async function load(){setEvents(await api.get('/api/v1/audit/events'));setVerify(await api.post('/api/v1/audit/verify-chain',{}))} useEffect(()=>{load()},[]);
+ async function createReport(){setReport(await api.post('/api/v1/audit/reports',{title:'AgentGuard V3 Competition Audit Report',format:'json'}))}
+ return <PageShell title="审计中心"><SectionTitle eyebrow="EVIDENCE ENGINE / TAMPER-EVIDENT LEDGER" title="每一个安全结论，都能回到当时的规则、轨迹和证据" desc="V3 将策略编译、Preflight、Tool Result、Recovery 全部写入数据库，并用 SHA-256 前向哈希链验证完整性。" action={<div className="toolbar"><button className="btn ghost" onClick={load}><RefreshCw size={14}/>校验链</button><button className="btn primary" onClick={createReport}><Download size={14}/>生成审计报告</button></div>}/>
+  <div className="audit-head-grid-v2"><div className="audit-status"><div className="audit-icon"><ShieldCheck size={27}/></div><div><small>HASH CHAIN STATUS</small><strong>{verify?.valid?'VERIFIED':'WAITING'}</strong><p>{verify?.events||0} 个事件参与完整性校验</p></div></div><div className="audit-mini"><Hash size={18}/><span>Head Hash</span><b>{verify?.head_hash?.slice(0,16)||'—'}…</b></div><div className="audit-mini"><Link2 size={18}/><span>Integrity</span><b>SHA-256 CHAIN</b></div><div className="audit-mini"><Database size={18}/><span>Persistence</span><b>SQL DATABASE</b></div><div className="audit-mini"><LockKeyhole size={18}/><span>Runtime Point</span><b>PRE-EXECUTION</b></div></div>
+  {report&&<div className="report-toast"><CheckCircle2 size={18}/><div><b>报告已生成</b><span>{report.report_id} · {report.title}</span></div></div>}
+  <section className="panel"><div className="audit-table-head"><div><small>IMMUTABLE EVENT LEDGER</small><h3>不可变审计事件</h3></div><span className={'chip '+(verify?.valid?'ok':'warn')}><CheckCircle2 size={12}/>{verify?.valid?'CHAIN VERIFIED':'VERIFYING'}</span></div><div className="table-wrap audit-table"><table><thead><tr><th>事件</th><th>Trace</th><th>Prev Hash</th><th>Current Hash</th><th>时间</th></tr></thead><tbody>{events.length?events.map(e=><tr key={e.event_id}><td><b>{e.event_type}</b><small>{e.event_id}</small></td><td><code>{e.trace_id}</code></td><td><code>{String(e.prev_hash).slice(0,11)}…</code></td><td><code className="hash-code">{String(e.hash).slice(0,16)}…</code></td><td><span className="time-cell"><Clock size={13}/>{String(e.created_at).replace('T',' ').slice(0,19)}</span></td></tr>):<tr><td colSpan={5}><Empty text="运行策略编译或 Runtime Demo 后自动生成证据"/></td></tr>}</tbody></table></div></section>
+ </PageShell>
+}

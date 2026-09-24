@@ -1,0 +1,5 @@
+-r requirements-formal.txt
+pytest>=8,<10
+httpx>=0.27,<1
+mcp>=2,<3
+jsonschema>=4.26,<5

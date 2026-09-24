@@ -1,0 +1,7 @@
+{
+  "kind": "compiler-ablation",
+  "split": "test",
+  "seed": 42,
+  "modes": ["direct_dsl", "structured_prompt", "graph_ir", "p2cv_full"],
+  "dataset": "benchmark/policies/policy_ground_truth_v3_50.json"
+}

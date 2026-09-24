@@ -1,0 +1,1 @@
+Pin exact package versions and source commits here before competition freeze. The working package manifests are not immutable lock files; no ToolHive/Cedar/Neo4j/Phoenix deployment has been locked yet.

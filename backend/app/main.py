@@ -1049,15 +1049,48 @@ def benchmark_eval(benchmark_id:str,body:dict=Body(default={}),db:Session=Depend
 def experiments(db:Session=Depends(get_db)): return wrap([{**serialize_row(x),"metrics":jload(x.metrics_json)} for x in db.query(Experiment).all()])
 @app.post("/api/v1/experiments")
 def experiment_create(body:dict=Body(default={}),db:Session=Depends(get_db)):
-    x=Experiment(id=uid("exp"),name=body.get("name","Experiment"),kind=body.get("kind","ablation"),status="completed",metrics_json=json.dumps(body.get("metrics",{})));db.add(x);db.commit();return wrap(serialize_row(x))
+    kind=body.get("kind","full-suite")
+    if kind not in {"full-suite","runtime-ablation","compiler-ablation"}: raise HTTPException(422,"Unknown experiment kind")
+    x=Experiment(id=uid("exp"),name=body.get("name","Experiment"),kind=kind,status="draft",metrics_json="{}");db.add(x);db.commit();return wrap(serialize_row(x))
+
+def _execute_experiment(db:Session,body:dict,target_id:str="")->tuple[EvaluationRun,dict]:
+    kind=body.get("kind","full-suite");split=body.get("split","test")
+    if kind not in {"full-suite","runtime-ablation","compiler-ablation"}: raise HTTPException(422,"Unknown experiment kind")
+    if split not in {"all","train","dev","test"}: raise HTTPException(422,"Unknown experiment split")
+    result={}
+    if kind in {"full-suite","runtime-ablation"}: result["runtime"]=runtime_ablation(active_contracts(db),split=split)
+    if kind in {"full-suite","compiler-ablation"}: result["compiler"]=run_compiler_ablation(split=split)
+    result["manifest"]=benchmark_manifest()
+    config={"kind":kind,"split":split,"manifest":result["manifest"]}
+    return _save_evaluation(db,"experiment",target_id,config,result),result
+
+@app.get("/api/v1/experiments/configs")
+def experiment_configs():
+    return wrap([{"id":"cfg_runtime_full","kind":"runtime-ablation","split":"test","frozen":True},{"id":"cfg_ablation_graph","kind":"compiler-ablation","split":"test","frozen":True}])
+
+@app.get("/api/v1/experiments/compare")
+def experiment_compare(db:Session=Depends(get_db)):
+    out=runtime_ablation(active_contracts(db),split="test")
+    series=[{"name":x["name"],"mode":x["mode"],"asr":x["attack_success_rate"],"completion":x["benign_task_completion"],"policy_fidelity":x["policy_fidelity"],"fpr":x["false_positive_rate"],"latency_ms":x["runtime_overhead_ms"]} for x in out["series"]]
+    return wrap({"series":series,"manifest":out["manifest"],"split":"test"})
+
 @app.get("/api/v1/experiments/{experiment_id}")
 def experiment_get(experiment_id:str,db:Session=Depends(get_db)):
     x=db.get(Experiment,experiment_id);return wrap({**serialize_row(x),"metrics":jload(x.metrics_json)} if x else None)
 @app.post("/api/v1/experiments/{experiment_id}/run")
-def experiment_run(experiment_id:str): return wrap({"experiment_id":experiment_id,"status":"completed","seed":42})
+def experiment_run(experiment_id:str,body:dict=Body(default={}),db:Session=Depends(get_db)):
+    x=db.get(Experiment,experiment_id)
+    if not x: raise HTTPException(404,"Experiment not found")
+    run,result=_execute_experiment(db,{"kind":x.kind,"split":body.get("split","test")},experiment_id)
+    x.status="completed";x.metrics_json=json.dumps(result);db.commit()
+    return wrap({"experiment_id":experiment_id,"run_id":run.id,"status":"completed","artifact_path":run.artifact_path})
 @app.get("/api/v1/experiments/{experiment_id}/results")
 def experiment_results(experiment_id:str,db:Session=Depends(get_db)):
-    x=db.get(Experiment,experiment_id);return wrap({"experiment_id":experiment_id,"metrics":jload(x.metrics_json) if x else {}})
+    x=db.get(Experiment,experiment_id)
+    if not x: raise HTTPException(404,"Experiment not found")
+    run=db.query(EvaluationRun).filter_by(kind="experiment",target_id=experiment_id).order_by(EvaluationRun.created_at.desc(),EvaluationRun.id.desc()).first()
+    if not run: raise HTTPException(409,"Experiment has not run")
+    return wrap({"experiment_id":experiment_id,"run_id":run.id,"metrics":jload(run.result_json)})
 
 
 @app.post("/api/v1/benchmarks/{benchmark_id}/scenarios")
@@ -1085,22 +1118,19 @@ def benchmark_run_metrics(run_id:str,db:Session=Depends(get_db)):
 def benchmark_run_failures(run_id:str,db:Session=Depends(get_db)):
     result=jload(_evaluation(db,run_id,"benchmark").result_json)
     return wrap({"run_id":run_id,"failures":[{"scenario_id":r["id"],"type":r["category"],"expected":r["expected_decision"],"actual":r["actual"],"note":r["reason"]} for r in result["rows"] if not r["passed"]]})
-@app.get("/api/v1/experiments/configs")
-def experiment_configs(): return wrap([{"id":"cfg_runtime_full","kind":"runtime-security","seed":42,"frozen":True},{"id":"cfg_ablation_graph","kind":"ablation","seed":42,"frozen":True}])
 @app.post("/api/v1/experiments/configs")
 def experiment_config_create(body:dict=Body(default={})): return wrap({"id":uid("cfg"),**body,"frozen":False})
 @app.post("/api/v1/experiments/runs")
-def experiment_run_create(body:dict=Body(default={})): return wrap({"run_id":uid("erun"),"status":"completed","config":body,"seed":body.get("seed",42)})
+def experiment_run_create(body:dict=Body(default={}),db:Session=Depends(get_db)):
+    run,_=_execute_experiment(db,body)
+    return wrap({"run_id":run.id,"status":"completed","config":jload(run.config_json),"artifact_path":run.artifact_path})
 @app.get("/api/v1/experiments/runs/{run_id}")
-def experiment_run_status(run_id:str): return wrap({"run_id":run_id,"status":"completed","progress":100})
+def experiment_run_status(run_id:str,db:Session=Depends(get_db)):
+    run=_evaluation(db,run_id,"experiment")
+    return wrap({"run_id":run.id,"status":"completed","progress":100,"config":jload(run.config_json),"artifact_path":run.artifact_path})
 @app.get("/api/v1/experiments/runs/{run_id}/results")
 def experiment_run_results(run_id:str,db:Session=Depends(get_db)):
-    return wrap({"run_id":run_id,"runtime":runtime_ablation(active_contracts(db),split="test"),"compiler":run_compiler_ablation(split="test")})
-@app.get("/api/v1/experiments/compare")
-def experiment_compare(db:Session=Depends(get_db)):
-    out=runtime_ablation(active_contracts(db),split="test")
-    series=[{"name":x["name"],"mode":x["mode"],"asr":x["attack_success_rate"],"completion":x["benign_task_completion"],"policy_fidelity":x["policy_fidelity"],"fpr":x["false_positive_rate"],"latency_ms":x["runtime_overhead_ms"]} for x in out["series"]]
-    return wrap({"series":series,"manifest":out["manifest"],"split":"test"})
+    return wrap({"run_id":run_id,**jload(_evaluation(db,run_id,"experiment").result_json)})
 @app.post("/api/v1/experiments/{run_id}/figures")
 def experiment_figures(run_id:str): return wrap({"run_id":run_id,"figures":[{"id":"fig_asr","title":"Attack Success Rate Comparison","format":"svg"}]})
 

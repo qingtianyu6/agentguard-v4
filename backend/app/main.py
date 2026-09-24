@@ -11,7 +11,7 @@ from sqlalchemy import func, update
 from sqlalchemy.exc import IntegrityError, OperationalError
 
 from .database import Base, engine, get_db, SessionLocal
-from .models import Agent, Policy, Contract, Trajectory, ActionEvent, Decision, Risk, Approval, Recovery, AuditEvent, AuditHead, McpServer, Tool, TrustedMcpTool, AttackRun, Benchmark, BenchmarkScenario, Experiment, ExperimentConfig, EvaluationRun, PolicyReview, LineageEvent, WebhookRequest, DecisionContextSnapshot
+from .models import Agent, Policy, Contract, CompilationJob, Trajectory, ActionEvent, Decision, Risk, Approval, Recovery, AuditEvent, AuditHead, McpServer, Tool, TrustedMcpTool, AttackRun, Benchmark, BenchmarkScenario, Experiment, ExperimentConfig, EvaluationRun, PolicyReview, LineageEvent, WebhookRequest, DecisionContextSnapshot
 from .security_engine import compile_policy, parse_policy, build_graph, generate_dsl, evaluate_action, safe_recovery, semantic_repair, generate_counterexamples, semantic_verify
 from .services.mcp_runtime import execute_tool
 from .services.provenance import build_provenance
@@ -434,11 +434,16 @@ def policy_compile(policy_id:str,body:dict=Body(default={}),db:Session=Depends(g
     result=compile_policy_v3(p.natural_text,policy_id.upper(),provider=body.get("provider"))
     enriched={**result["structured"],"_verification":result.get("verification",{}),"_counterexamples":result.get("counterexamples",[]),"_formal_ir":result.get("formal_ir"),"_cegar":result.get("cegar",{})}
     c=Contract(id=uid("ctr"),policy_id=p.id,dsl=result["dsl"],structured_json=json.dumps(enriched,ensure_ascii=False),graph_json=json.dumps(result["graph"],ensure_ascii=False),verified=bool(result.get("verified")))
-    db.add(c);db.commit();audit(db,"policy","CONTRACT_COMPILED_V3",{"policy_id":p.id,"contract_id":c.id,"status":result.get("status"),"provider":result.get("extraction",{}).get("provider"),"formal_verified":result.get("formal_verification",{}).get("verified")})
-    return wrap({"job_id":uid("job"),"status":"completed","contract_id":c.id,**result})
+    job=CompilationJob(id=uid("job"),policy_id=p.id,contract_id=c.id,status="completed")
+    db.add_all([c,job]);db.commit();audit(db,"policy","CONTRACT_COMPILED_V3",{"policy_id":p.id,"contract_id":c.id,"job_id":job.id,"status":result.get("status"),"provider":result.get("extraction",{}).get("provider"),"formal_verified":result.get("formal_verification",{}).get("verified")})
+    return wrap({"job_id":job.id,"status":"completed","contract_id":c.id,**result})
 @app.get("/api/v1/policies/{policy_id}/compilations/{job_id}")
 def policy_compilation(policy_id:str,job_id:str,db:Session=Depends(get_db)):
-    c=db.query(Contract).filter(Contract.policy_id==policy_id).order_by(Contract.created_at.desc()).first();return wrap({"job_id":job_id,"status":"completed","contract":serialize_row(c)})
+    job=db.get(CompilationJob,job_id)
+    if not job or job.policy_id!=policy_id: raise HTTPException(404,"Compilation job not found")
+    c=db.get(Contract,job.contract_id)
+    if not c: raise HTTPException(409,"Compilation contract is missing")
+    return wrap({"job_id":job.id,"status":job.status,"contract":serialize_row(c)})
 @app.post("/api/v1/policies/{policy_id}/validate")
 def policy_validate(policy_id:str,db:Session=Depends(get_db)):
     p=db.get(Policy,policy_id); r=compile_policy(p.natural_text,policy_id.upper()) if p else None
@@ -555,16 +560,34 @@ def contract_get(contract_id:str,db:Session=Depends(get_db)):
     c=db.get(Contract,contract_id)
     return wrap({**serialize_row(c),"structured":jload(c.structured_json),"graph":jload(c.graph_json)} if c else None)
 @app.post("/api/v1/contracts/{contract_id}/evaluate")
-def contract_eval(contract_id:str,body:dict=Body(...),db:Session=Depends(get_db)): return wrap(evaluate_action(body,active_contracts(db),body.get("history",[])))
+def contract_eval(contract_id:str,body:dict=Body(...),db:Session=Depends(get_db)):
+    c=db.get(Contract,contract_id)
+    if not c: raise HTTPException(404,"Contract not found")
+    if not isinstance(body.get("history",[]),list): raise HTTPException(422,"History must be an array")
+    result=evaluate_action(body,[{"contract_id":c.id,"policy_id":c.policy_id,"structured":jload(c.structured_json)}],body.get("history",[]))
+    return wrap({"contract_id":contract_id,"scope":"single_contract_plus_core_guard",**result})
 @app.post("/api/v1/contracts/{contract_id}/test-cases")
 def contract_tests(contract_id:str,db:Session=Depends(get_db)):
     c=db.get(Contract,contract_id)
     if not c: raise HTTPException(404,"Contract not found")
-    structured=jload(c.structured_json); cases=generate_counterexamples(structured)
-    return wrap({"contract_id":contract_id,"passed":len(cases),"failed":0,"coverage":1.0,"cases":cases})
+    structured=jload(c.structured_json); generated=generate_counterexamples(structured)
+    contract={"contract_id":c.id,"policy_id":c.policy_id,"structured":structured}
+    cases=[]
+    for item in generated:
+        payload=item["input"]
+        result=evaluate_action(payload,[contract],payload.get("history",[]))
+        expected=item["expected"]
+        passed=result["decision"]!="ALLOW" if expected=="BLOCK_OR_ASK" else result["decision"]==expected
+        cases.append({**item,"actual":result["decision"],"passed":passed,"reason":result["reason"]})
+    passed_count=sum(item["passed"] for item in cases)
+    return wrap({"contract_id":contract_id,"passed":passed_count,"failed":len(cases)-passed_count,
+                 "pass_rate":round(passed_count/len(cases),4) if cases else None,
+                 "scope":"generated_synthetic_cases_only","cases":cases})
 @app.get("/api/v1/contracts/{contract_id}/logic")
 def contract_logic(contract_id:str,db:Session=Depends(get_db)):
-    c=db.get(Contract,contract_id);return wrap({"format":"DSL","content":c.dsl if c else ""})
+    c=db.get(Contract,contract_id)
+    if not c: raise HTTPException(404,"Contract not found")
+    return wrap({"format":"DSL","content":c.dsl})
 
 # ---- Gateway Runtime ----
 @app.post('/api/v1/trust/mcp-tools')

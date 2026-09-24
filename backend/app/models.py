@@ -36,6 +36,14 @@ class Contract(Base):
     verified: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=now)
 
+class CompilationJob(Base):
+    __tablename__ = "compilation_jobs"
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    policy_id: Mapped[str] = mapped_column(String(64), index=True)
+    contract_id: Mapped[str] = mapped_column(String(64))
+    status: Mapped[str] = mapped_column(String(30), default="completed")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=now)
+
 class Trajectory(Base):
     __tablename__ = "trajectories"
     id: Mapped[str] = mapped_column(String(64), primary_key=True)

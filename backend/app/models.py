@@ -166,6 +166,12 @@ class Benchmark(Base):
     scenario_count: Mapped[int] = mapped_column(Integer, default=50)
     status: Mapped[str] = mapped_column(String(30), default="draft")
 
+class BenchmarkScenario(Base):
+    __tablename__ = "benchmark_scenarios"
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    benchmark_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    case_json: Mapped[str] = mapped_column(Text)
+
 class Experiment(Base):
     __tablename__ = "experiments"
     id: Mapped[str] = mapped_column(String(64), primary_key=True)

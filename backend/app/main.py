@@ -11,7 +11,7 @@ from sqlalchemy import func, update
 from sqlalchemy.exc import IntegrityError, OperationalError
 
 from .database import Base, engine, get_db, SessionLocal
-from .models import Agent, Policy, Contract, Trajectory, ActionEvent, Decision, Risk, Approval, Recovery, AuditEvent, AuditHead, McpServer, Tool, TrustedMcpTool, AttackRun, Benchmark, Experiment, EvaluationRun, PolicyReview, LineageEvent, WebhookRequest, DecisionContextSnapshot
+from .models import Agent, Policy, Contract, Trajectory, ActionEvent, Decision, Risk, Approval, Recovery, AuditEvent, AuditHead, McpServer, Tool, TrustedMcpTool, AttackRun, Benchmark, BenchmarkScenario, Experiment, EvaluationRun, PolicyReview, LineageEvent, WebhookRequest, DecisionContextSnapshot
 from .security_engine import compile_policy, parse_policy, build_graph, generate_dsl, evaluate_action, safe_recovery, semantic_repair, generate_counterexamples, semantic_verify
 from .services.mcp_runtime import execute_tool
 from .services.provenance import build_provenance
@@ -20,6 +20,7 @@ from .services.llm_extractor import extract_policy, provider_status
 from .services.formal_verifier import verify_formal, build_formal_ir, formal_ir_to_smt2
 from .services.p2cv_v3 import compile_policy_v3, graph_ir_v3
 from .services.research_experiments import compiler_benchmark, run_compiler_ablation, runtime_ablation, persist_run
+from benchmark.runner.validate import validate_curated
 
 def _strict() -> bool:
     return os.environ.get('AGENTGUARD_SECURITY_PROFILE', 'sandbox').lower() == 'strict'
@@ -1021,26 +1022,31 @@ def _evaluation(db:Session,run_id:str,kind:str)->EvaluationRun:
     if record is None or record.kind!=kind: raise HTTPException(404,"Evaluation run not found")
     return record
 
+def _benchmark_cases(db:Session,benchmark_id:str)->list[dict]:
+    if benchmark_id in {"bench_v30","bench_v20"}: return BENCH_SCENARIOS
+    if not db.get(Benchmark,benchmark_id): raise HTTPException(404,"Benchmark not found")
+    return [jload(row.case_json) for row in db.query(BenchmarkScenario).filter_by(benchmark_id=benchmark_id).order_by(BenchmarkScenario.id).all()]
+
 def _run_benchmark(db:Session,benchmark_id:str,body:dict)->tuple[EvaluationRun,dict]:
-    if benchmark_id!="bench_v30" and benchmark_id!="bench_v20" and not db.get(Benchmark,benchmark_id):
-        raise HTTPException(404,"Benchmark not found")
+    cases=_benchmark_cases(db,benchmark_id)
     mode=body.get("mode","trajectory_full");split=body.get("split","all");category=body.get("category")
     if mode not in {"no_guard","single_step","trajectory_full"}: raise HTTPException(422,"Unknown benchmark mode")
     if split not in {"all","train","dev","test"}: raise HTTPException(422,"Unknown benchmark split")
-    config={"benchmark_id":benchmark_id,"mode":mode,"split":split,"category":category,"manifest":benchmark_manifest()}
-    result=evaluate_benchmark(active_contracts(db),mode=mode,split=split,category=category)
+    digest=hashlib.sha256(json.dumps(cases,sort_keys=True,ensure_ascii=False).encode()).hexdigest()
+    config={"benchmark_id":benchmark_id,"mode":mode,"split":split,"category":category,"scenario_count":len(cases),"scenario_sha256":digest,"manifest":benchmark_manifest() if benchmark_id in {"bench_v30","bench_v20"} else None}
+    result=evaluate_benchmark(active_contracts(db),mode=mode,split=split,category=category,scenarios=cases)
     return _save_evaluation(db,"benchmark",benchmark_id,config,result),result
 
 @app.get("/api/v1/benchmarks")
 def benchmarks(db:Session=Depends(get_db)): return wrap([serialize_row(x) for x in db.query(Benchmark).all()])
 @app.post("/api/v1/benchmarks")
 def benchmark_create(body:dict=Body(default={}),db:Session=Depends(get_db)):
-    x=Benchmark(id=uid("bench"),name=body.get("name","AgentGuard-Bench"),version=body.get("version","v0.1"),scenario_count=body.get("scenario_count",50));db.add(x);db.commit();return wrap(serialize_row(x))
+    x=Benchmark(id=uid("bench"),name=body.get("name","AgentGuard-Bench"),version=body.get("version","v0.1"),scenario_count=0);db.add(x);db.commit();return wrap(serialize_row(x))
 @app.get("/api/v1/benchmarks/{benchmark_id}")
 def benchmark_get(benchmark_id:str,db:Session=Depends(get_db)): return wrap(serialize_row(db.get(Benchmark,benchmark_id)))
 @app.get("/api/v1/benchmarks/{benchmark_id}/scenarios")
-def benchmark_scenarios(benchmark_id:str):
-    return wrap(BENCH_SCENARIOS)
+def benchmark_scenarios(benchmark_id:str,db:Session=Depends(get_db)):
+    return wrap(_benchmark_cases(db,benchmark_id))
 @app.post("/api/v1/benchmarks/{benchmark_id}/evaluate")
 def benchmark_eval(benchmark_id:str,body:dict=Body(default={}),db:Session=Depends(get_db)):
     run,result=_run_benchmark(db,benchmark_id,body)
@@ -1094,14 +1100,34 @@ def experiment_results(experiment_id:str,db:Session=Depends(get_db)):
 
 
 @app.post("/api/v1/benchmarks/{benchmark_id}/scenarios")
-def benchmark_add_scenario(benchmark_id:str,body:dict=Body(default={})): return wrap({"benchmark_id":benchmark_id,"scenario":{"id":body.get("id",uid("AGB")),**body}})
+def benchmark_add_scenario(benchmark_id:str,body:dict=Body(default={}),db:Session=Depends(get_db)):
+    if benchmark_id in {"bench_v30","bench_v20"}: raise HTTPException(409,"Built-in candidate benchmark is read-only")
+    x=db.get(Benchmark,benchmark_id)
+    if not x: raise HTTPException(404,"Benchmark not found")
+    if x.status=="frozen": raise HTTPException(409,"Frozen benchmark cannot be modified")
+    case={**body,"id":body.get("id",uid("AGB"))}
+    if not isinstance(case["id"],str) or not case["id"]: raise HTTPException(422,"Scenario ID is required")
+    if db.get(BenchmarkScenario,(case["id"],benchmark_id)): raise HTTPException(409,"Scenario ID already exists")
+    report=validate_curated([case])
+    if not report["valid"]: raise HTTPException(422,{"reason":"Invalid scenario","validation":report})
+    db.add(BenchmarkScenario(id=case["id"],benchmark_id=benchmark_id,case_json=json.dumps(case,ensure_ascii=False)))
+    x.scenario_count+=1;db.commit()
+    return wrap({"benchmark_id":benchmark_id,"scenario":case})
 @app.post("/api/v1/benchmarks/{benchmark_id}/validate")
-def benchmark_validate(benchmark_id:str): return wrap({"benchmark_id":benchmark_id,"valid":True,"schema_errors":[],"label_warnings":[]})
+def benchmark_validate(benchmark_id:str,db:Session=Depends(get_db)):
+    cases=_benchmark_cases(db,benchmark_id)
+    report=validate_curated(cases)
+    return wrap({"benchmark_id":benchmark_id,**report,"candidate_only":benchmark_id in {"bench_v30","bench_v20"}})
 @app.post("/api/v1/benchmarks/{benchmark_id}/freeze")
 def benchmark_freeze(benchmark_id:str,db:Session=Depends(get_db)):
+    if benchmark_id in {"bench_v30","bench_v20"}: raise HTTPException(409,"Built-in candidate benchmark cannot be frozen")
     x=db.get(Benchmark,benchmark_id)
-    if x:x.status="frozen";db.commit()
-    return wrap({"benchmark_id":benchmark_id,"status":"frozen","test_split_locked":True})
+    if not x: raise HTTPException(404,"Benchmark not found")
+    cases=_benchmark_cases(db,benchmark_id);report=validate_curated(cases)
+    if not report["valid"] or not 500<=len(cases)<=800:
+        raise HTTPException(409,{"reason":"Curated benchmark gate not met","count":len(cases),"required_count":"500-800","validation":report})
+    x.status="frozen";db.commit()
+    return wrap({"benchmark_id":benchmark_id,"status":"frozen","test_split_locked":True,"human_review_identity_verified":False})
 @app.post("/api/v1/benchmarks/{benchmark_id}/runs")
 def benchmark_run_create(benchmark_id:str,body:dict=Body(default={}),db:Session=Depends(get_db)):
     run,_=_run_benchmark(db,benchmark_id,body)

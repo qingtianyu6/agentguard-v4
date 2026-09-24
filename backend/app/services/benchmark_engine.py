@@ -34,8 +34,9 @@ def evaluate_benchmark(
     mode: str = "trajectory_full",
     split: str = "all",
     category: str | None = None,
+    scenarios: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
-    selected = [x for x in SCENARIOS if split == "all" or x.get("split") == split]
+    selected = [x for x in (SCENARIOS if scenarios is None else scenarios) if split == "all" or x.get("split") == split]
     if category:
         selected = [x for x in selected if x.get("category") == category]
     rows = []

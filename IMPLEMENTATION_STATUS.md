@@ -70,10 +70,16 @@ cd frontend && npm install && npm run build
 
 - `AGENTGUARD_EVIDENCE_SIGNING_KEY_FILE` 配置 Ed25519 私钥后，Evidence Bundle 对完整导出对象签名；共享模块与离线 CLI 使用预先信任的公钥验证摘要、审计状态和签名。无密钥时明确标为未签名。
 - 审计追加使用数据库链头版本比较和重试；SQLite 线程及多进程并发测试确认不分叉。审计中心的 `verify-chain` API 已复用统一的 v2/legacy 验证器。
-- 当前环境后端 62 passed、1 skipped，另有 Cisco 扫描器测试因 `litellm` 依赖缺失未运行；前端构建通过。生产密钥保管、跨数据库并发验收、业务与审计同事务、外部独立验证仍待完成，M7 Gate 未通过。
+- 当前环境后端 64 passed、1 skipped，另有 Cisco 扫描器测试因 `litellm` 依赖缺失未运行；前端构建通过。生产密钥保管、跨数据库并发验收、业务与审计同事务、外部独立验证仍待完成，M7 Gate 未通过。
 
 ## 追加实施：可追溯实验运行
 
 - Benchmark evaluate/runs 现在实际执行并将配置、结果及证据文件写入持久化运行记录；metrics/failures 按 run ID 读取同一份快照，未知 ID 返回 404。
 - Experiment 创建为 draft，运行时真实计算 runtime/compiler 消融并保存结果；compare/configs 的 GET 路由已放在动态实验 ID 路由之前，避免前端请求被误匹配。
-- 实验配置创建、场景追加/冻结校验和图表生成仍有占位接口；完整 M6/M7 验收仍未通过。
+- 实验配置创建和图表生成仍有占位接口；完整 M6/M7 验收仍未通过。
+
+## 追加实施：Benchmark 草稿与冻结门槛
+
+- 自建 Benchmark 的场景写入数据库，运行只读取对应集合并记录场景 SHA-256；新增场景需通过单项结构和标注一致性校验，重复 ID 被拒绝。
+- Validate 返回实际的 schema、重复内容、标注一致性和模板族跨 split 检查结果；Freeze 要求整体校验通过且 500–800 条，未达标返回 409。
+- 内置 V3 100 条仍为只读候选集，不能被 API 冻结。自动校验不能证明 reviewer 身份或完成独立人工复核，M6 Gate 仍未通过。

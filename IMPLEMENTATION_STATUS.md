@@ -70,7 +70,7 @@ cd frontend && npm install && npm run build
 
 - `AGENTGUARD_EVIDENCE_SIGNING_KEY_FILE` 配置 Ed25519 私钥后，Evidence Bundle 对完整导出对象签名；共享模块与离线 CLI 使用预先信任的公钥验证摘要、审计状态和签名。无密钥时明确标为未签名。
 - 审计追加使用数据库链头版本比较和重试；SQLite 线程及多进程并发测试确认不分叉。审计中心的 `verify-chain` API 已复用统一的 v2/legacy 验证器。
-- 当前环境后端 65 passed、1 skipped，另有 Cisco 扫描器测试因 `litellm` 依赖缺失未运行；前端构建通过。生产密钥保管、跨数据库并发验收、业务与审计同事务、外部独立验证仍待完成，M7 Gate 未通过。
+- 当前环境后端 67 passed、1 skipped，另有 Cisco 扫描器测试因 `litellm` 依赖缺失未运行；前端构建通过。生产密钥保管、跨数据库并发验收、业务与审计同事务、外部独立验证仍待完成，M7 Gate 未通过。
 
 ## 追加实施：可追溯实验运行
 
@@ -88,3 +88,9 @@ cd frontend && npm install && npm run build
 
 - 实验配置创建后持久化为不可变快照；按 `config_id` 运行时拒绝与快照冲突的参数，并在运行配置里记录所用 ID。
 - 图表接口从已保存运行结果生成 SVG，不再为未知 run ID 返回虚构图表。当前图表为单指标比较，完整多指标报告和外部复现仍待实施。
+
+## 追加实施：攻击实验室判定对照
+
+- 三个演示场景绑定到 V3 Benchmark 候选样本，用当前守卫实际计算决策与判定耗时；未知场景和运行 ID 返回 404。
+- 接口明确返回 `simulation=true`、`tool_invoked=false` 和 `attack_success_observed=null`；`would_allow` 仅表示策略模拟下动作是否被放行。页面不再宣称工具已被调用或攻击实际成功。
+- 此对照不能替代真实 MCP 攻击执行、正式外部基准或安全效果统计，M6/M8 Gate 仍未通过。
